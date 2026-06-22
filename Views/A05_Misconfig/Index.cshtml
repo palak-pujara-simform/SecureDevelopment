@@ -1,0 +1,76 @@
+@{
+    ViewData["Title"] = "A05 — Security Misconfiguration";
+}
+
+<h4 class="fw-bold">A05 — Security Misconfiguration</h4>
+<p class="text-muted">Insecure defaults, unnecessary features, verbose errors — the most common OWASP issue.</p>
+
+<div class="row g-3 mb-4">
+    <!-- Error Messages -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — Detailed Error Messages</h6>
+            <p class="small text-muted">Exception details leaked to the browser reveal internal DB credentials, file paths, and architecture.</p>
+            <a asp-action="VulnerableError" class="btn btn-danger btn-sm">Trigger Error (Verbose)</a>
+            <div class="code-block mt-3">
+<pre>// VULNERABLE
+catch (Exception ex)
+{
+    return Content(ex.ToString());
+    // Exposes: connection strings, stack trace,
+    // internal server paths, library versions
+}</pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — Generic Error + Internal Logging</h6>
+            <p class="small text-muted">User sees a reference code. Full details logged internally only.</p>
+            <a asp-action="SecureError" class="btn btn-success btn-sm">Trigger Error (Safe)</a>
+            <div class="code-block mt-3">
+<pre>// SECURE
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Unhandled exception");
+    return View("Error",
+        new { Message = "Something went wrong. Ref: ERR-001" });
+    // Attacker learns nothing useful
+}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Admin Panel Access -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — Admin Panel Without Auth</h6>
+            <p class="small text-muted">Admin endpoint accessible without any authentication check.</p>
+            <a asp-action="VulnerableAdmin" class="btn btn-danger btn-sm">Access Admin Panel (No Auth)</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — Role-Based Access Control</h6>
+            <p class="small text-muted">Admin panel checks role from session. Requires admin login first.</p>
+            <div class="d-flex gap-2">
+                <a asp-action="SetAdminSession" class="btn btn-outline-secondary btn-sm">Simulate Admin Login</a>
+                <a asp-action="SecureAdmin" class="btn btn-success btn-sm">Access Admin Panel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 p-3 bg-light border rounded small">
+    <strong>Misconfiguration Checklist:</strong>
+    <ul class="mb-0 mt-1">
+        <li>Disable directory listing in web servers (Apache/Nginx/IIS)</li>
+        <li>Remove default accounts/credentials (<code>admin/admin</code>)</li>
+        <li>Disable debug mode in production (<code>ASPNETCORE_ENVIRONMENT=Production</code>)</li>
+        <li>Set proper HTTP security headers (CSP, HSTS, X-Frame-Options)</li>
+        <li>Remove unused features and endpoints</li>
+        <li>Regularly review cloud storage permissions (S3, Blob)</li>
+    </ul>
+</div>

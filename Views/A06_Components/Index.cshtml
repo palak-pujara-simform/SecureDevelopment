@@ -1,0 +1,91 @@
+@model OWASPDemo.Models.ComponentsViewModel
+@{
+    ViewData["Title"] = "A06 — Vulnerable Components";
+}
+
+<h4 class="fw-bold">A06 — Vulnerable & Outdated Components</h4>
+<p class="text-muted">Using components with known vulnerabilities — a top supply-chain risk vector.</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="alert alert-danger py-2 mb-0 small">
+            <strong>⚡ Risk:</strong> Outdated NuGet/npm packages with public CVEs. SolarWinds injected malware via legitimate update.
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success py-2 mb-0 small">
+            <strong>🛡️ Fix:</strong> <code>dotnet list package --vulnerable</code> &nbsp;|&nbsp; Dependabot &nbsp;|&nbsp; Verify package signatures
+        </div>
+    </div>
+</div>
+
+<div class="demo-container">
+    <h6 class="text-danger fw-bold mb-3">Known Vulnerable Packages (Demo Data)</h6>
+    <table class="table table-hover table-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Package</th>
+                <th>Installed</th>
+                <th>Safe Version</th>
+                <th>CVE</th>
+                <th>Severity</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pkg in Model.VulnerablePackages)
+            {
+                var severityClass = pkg.Severity == "Critical" ? "table-danger" :
+                                    pkg.Severity == "High" ? "table-warning" : "table-info";
+                <tr class="@severityClass">
+                    <td><strong>@pkg.Name</strong></td>
+                    <td><span class="badge bg-danger">@pkg.InstalledVersion</span></td>
+                    <td><span class="badge bg-success">@pkg.SafeVersion</span></td>
+                    <td><a href="#" class="text-dark fw-bold">@pkg.CVE</a></td>
+                    <td>
+                        <span class="badge @(pkg.Severity=="Critical"?"bg-danger":pkg.Severity=="High"?"bg-warning text-dark":"bg-info text-dark")">
+                            @pkg.Severity
+                        </span>
+                    </td>
+                    <td class="small">@pkg.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="row g-3 mt-3">
+    <div class="col-md-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🛡️ Detection Commands</h6>
+            <div class="code-block">
+<pre># Check for vulnerable NuGet packages
+dotnet list package --vulnerable
+
+# Audit npm packages
+npm audit
+
+# Check for outdated packages
+dotnet list package --outdated
+npm outdated
+
+# GitHub Dependabot auto-creates PRs for updates</pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="demo-container border border-danger">
+            <h6 class="text-danger fw-bold">☠️ SolarWinds Case Study (2020)</h6>
+            <ul class="small">
+                <li>Attackers compromised SolarWinds build pipeline</li>
+                <li>Malicious code (<strong>SUNBURST backdoor</strong>) injected into legitimate software update</li>
+                <li>18,000+ organizations installed the infected update including US government agencies</li>
+                <li>Attacker had 6–9 months of undetected access</li>
+                <li><strong>Root cause:</strong> No build pipeline integrity verification, no code signing</li>
+            </ul>
+            <div class="mitigation-tip small">
+                <strong>🛡️ Fix:</strong> Sign packages, verify checksums, use reproducible builds, monitor build pipelines
+            </div>
+        </div>
+    </div>
+</div>

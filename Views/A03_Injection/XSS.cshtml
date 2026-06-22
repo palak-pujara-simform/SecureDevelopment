@@ -1,0 +1,85 @@
+@model OWASPDemo.Models.XssViewModel
+@{
+    ViewData["Title"] = "XSS Demo";
+}
+
+<div class="d-flex gap-2 mb-3 align-items-center">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back</a>
+    <h5 class="fw-bold mb-0">Cross-Site Scripting (XSS)</h5>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="alert alert-danger py-2 mb-0 small">
+            <strong>⚡ Attack payloads:</strong><br />
+            <code>&lt;script&gt;alert('XSS!')&lt;/script&gt;</code><br />
+            <code>&lt;img src=x onerror="document.cookie"&gt;</code><br />
+            <code>&lt;b onmouseover="alert('hover')"&gt;Hover me&lt;/b&gt;</code>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success py-2 mb-0 small">
+            <strong>🛡️ Defense:</strong> HTML-encode all output. Use <code>@@Html.Raw()</code> only when absolutely necessary.
+            Razor's <code>@@variable</code> auto-encodes by default.
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- VULNERABLE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — Raw HTML Rendered</h6>
+            <form method="post" asp-action="XssVulnerable">
+                <div class="d-flex gap-2">
+                    <input type="text" name="Comment" value="@Model.Comment" placeholder='Try: &lt;script&gt;alert(1)&lt;/script&gt;' class="form-control form-control-sm" />
+                    <button class="btn btn-danger btn-sm">Post</button>
+                </div>
+            </form>
+            @if (Model.IsVulnerable && Model.StoredComment != null)
+            {
+                <div class="mt-3 p-2 border rounded bg-light">
+                    <small class="text-muted d-block mb-1">Stored comment (rendered raw):</small>
+                    @Html.Raw(Model.StoredComment)
+                </div>
+                <small class="text-danger">⚠️ @Model.Message</small>
+            }
+            <div class="code-block mt-3">
+<pre>// VULNERABLE: @@Html.Raw() renders scripts!
+@@Html.Raw(Model.StoredComment)
+
+// Stored: &lt;script&gt;alert('XSS')&lt;/script&gt;
+// Browser: EXECUTES the script</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — HTML Encoded Output</h6>
+            <form method="post" asp-action="XssSecure">
+                <div class="d-flex gap-2">
+                    <input type="text" name="Comment" value="@Model.Comment" placeholder='Try: &lt;script&gt;alert(1)&lt;/script&gt;' class="form-control form-control-sm" />
+                    <button class="btn btn-success btn-sm">Post</button>
+                </div>
+            </form>
+            @if (!Model.IsVulnerable && Model.StoredComment != null)
+            {
+                <div class="mt-3 p-2 border rounded bg-light">
+                    <small class="text-muted d-block mb-1">Stored comment (encoded, safe):</small>
+                    @Model.StoredComment
+                </div>
+                <small class="text-success">✅ @Model.Message</small>
+            }
+            <div class="code-block mt-3">
+<pre>// SECURE: Razor auto-encodes by default
+@@Model.StoredComment
+// Or: HtmlEncode before storing
+var safe = WebUtility.HtmlEncode(input);
+
+// &lt;script&gt; → &amp;lt;script&amp;gt; (displays, not executes)</pre>
+            </div>
+        </div>
+    </div>
+</div>

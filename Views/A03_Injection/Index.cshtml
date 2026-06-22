@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "A03 — Injection";
+}
+
+<h4 class="fw-bold">A03 — Injection</h4>
+<p class="text-muted">Untrusted data sent to an interpreter as part of a command or query.</p>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <a asp-action="SqlInjection" class="card text-decoration-none border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-danger">💉 SQL Injection</h6>
+                <p class="small text-muted">String-concatenated queries allow attackers to dump the entire database.</p>
+                <div class="code-block">
+<pre>' OR '1'='1' --
+'; DROP TABLE Users; --</pre>
+                </div>
+                <span class="btn btn-danger btn-sm mt-3 w-100">Open Demo →</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="XSS" class="card text-decoration-none border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-danger">🖥️ Cross-Site Scripting (XSS)</h6>
+                <p class="small text-muted">Inject scripts into pages viewed by other users. Session hijacking, phishing.</p>
+                <div class="code-block">
+<pre>&lt;script&gt;alert('XSS')&lt;/script&gt;
+&lt;img src=x onerror=alert(1)&gt;</pre>
+                </div>
+                <span class="btn btn-danger btn-sm mt-3 w-100">Open Demo →</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="CommandInjection" class="card text-decoration-none border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="fw-bold text-danger">⌨️ Command Injection</h6>
+                <p class="small text-muted">OS commands executed with user-controlled input. Full server takeover possible.</p>
+                <div class="code-block">
+<pre>127.0.0.1 &amp; dir C:\
+127.0.0.1 | type secrets.txt</pre>
+                </div>
+                <span class="btn btn-danger btn-sm mt-3 w-100">Open Demo →</span>
+            </div>
+        </a>
+    </div>
+</div>

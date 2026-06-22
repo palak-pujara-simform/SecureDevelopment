@@ -1,0 +1,93 @@
+@model OWASPDemo.Models.CommandViewModel
+@{
+    ViewData["Title"] = "Command Injection Demo";
+}
+
+<div class="d-flex gap-2 mb-3 align-items-center">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back</a>
+    <h5 class="fw-bold mb-0">Command Injection</h5>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="alert alert-danger py-2 mb-0 small">
+            <strong>⚡ Attack payload:</strong> <code>127.0.0.1 &amp; dir C:\</code><br />
+            Also try: <code>127.0.0.1 | type C:\Windows\win.ini</code>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success py-2 mb-0 small">
+            <strong>🛡️ Defense:</strong> Whitelist-validate input. Never pass user input to shell. Use dedicated process API.
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- VULNERABLE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — Shell Command Injection</h6>
+            <p class="small text-muted">Ping a host. Inject shell operators to run additional commands.</p>
+            <form method="post" asp-action="CommandVulnerable">
+                <div class="d-flex gap-2">
+                    <input type="text" name="Host" value="@Model.Host" placeholder="127.0.0.1" class="form-control form-control-sm" />
+                    <button class="btn btn-danger btn-sm">Ping</button>
+                </div>
+            </form>
+            @if (Model.IsVulnerable && Model.Command != null)
+            {
+                <div class="code-block mt-2 small"><span class="text-warning">Command:</span> @Model.Command</div>
+            }
+        </div>
+    </div>
+
+    <!-- SECURE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — Input Validation + No Shell</h6>
+            <p class="small text-muted">Same feature — but only valid hostnames are allowed.</p>
+            <form method="post" asp-action="CommandSecure">
+                <div class="d-flex gap-2">
+                    <input type="text" name="Host" value="@Model.Host" placeholder="127.0.0.1" class="form-control form-control-sm" />
+                    <button class="btn btn-success btn-sm">Ping</button>
+                </div>
+            </form>
+            @if (!Model.IsVulnerable && Model.Command != null)
+            {
+                <div class="code-block mt-2 small"><span class="text-success">Command:</span> @Model.Command</div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.Output != null)
+{
+    <div class="mt-3">
+        <h6 class="fw-bold @(Model.IsVulnerable ? "text-danger" : "text-success")">
+            @(Model.IsVulnerable ? "🔴 VULNERABLE" : "🟢 SECURE") — Output:
+        </h6>
+        <div class="code-block"><pre>@Model.Output</pre></div>
+    </div>
+}
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <div class="code-block">
+<pre>// VULNERABLE: User input in shell string
+FileName = "cmd.exe",
+Arguments = $"/c ping -n 1 {userInput}"
+// Input: "127.0.0.1 &amp; dir C:\"
+// Executes: ping AND dir!</pre>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="code-block">
+<pre>// SECURE: Validate then separate args
+if (!Regex.IsMatch(host, @@"^[a-zA-Z0-9.\-]+$"))
+    return Blocked();
+
+FileName = "ping",       // no shell
+Arguments = $"-n 1 {host}"  // validated</pre>
+        </div>
+    </div>
+</div>

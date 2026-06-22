@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "A01 — Broken Access Control";
+}
+
+<h4 class="fw-bold">A01 — Broken Access Control</h4>
+<p class="text-muted">The #1 OWASP risk. Occurs when users can act outside their intended permissions.</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="alert alert-danger py-2 mb-0"><strong>Attack:</strong> IDOR — change <code>?id=2</code> to read another user's private data</div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success py-2 mb-0"><strong>Fix:</strong> Check <code>currentUser.Id == requestedId</code> before returning data</div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- VULNERABLE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — No Authorization Check</h6>
+            <p class="small text-muted">You are logged in as <strong>alice (ID=1)</strong>. Change the ID below to access other users' profiles.</p>
+            <div class="attack-tip mb-3 small">
+                <strong>⚡ Try:</strong> Use ID=2 (Bob) or ID=3 (Admin) to read their account balance, credit card, and SSN.
+            </div>
+            <form method="get" asp-action="VulnerableProfile">
+                <div class="d-flex gap-2">
+                    <input type="number" name="id" value="1" min="1" max="3" class="form-control form-control-sm" style="width:90px" />
+                    <button class="btn btn-danger btn-sm">View Profile</button>
+                </div>
+            </form>
+            <div class="code-block mt-3">
+<pre>// VULNERABLE: No ownership check
+public IActionResult VulnerableProfile(int id)
+{
+    var user = _db.Users.Find(id); // anyone can access any ID!
+    return View("Profile", user);
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — Ownership Enforced</h6>
+            <p class="small text-muted">Same setup. Try accessing ID=2 — you'll get a 403.</p>
+            <div class="mitigation-tip mb-3 small">
+                <strong>🛡️ Defense:</strong> Compare requested ID against session user ID. Deny if mismatch (unless admin).
+            </div>
+            <form method="get" asp-action="SecureProfile">
+                <div class="d-flex gap-2">
+                    <input type="number" name="id" value="1" min="1" max="3" class="form-control form-control-sm" style="width:90px" />
+                    <button class="btn btn-success btn-sm">View Profile</button>
+                </div>
+            </form>
+            <div class="code-block mt-3">
+<pre>// SECURE: Authorization check
+if (id != currentUserId && currentUser.Role != "admin")
+    return Forbid(); // 403 Access Denied
+
+var user = _db.Users.Find(id);
+return View("Profile", user);</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 p-3 bg-light border rounded small">
+    <strong>Real-world example:</strong> In 2019, an Australian government API exposed 50,000+ patient records
+    because IDs in URLs were sequential integers with no authorization check.
+</div>

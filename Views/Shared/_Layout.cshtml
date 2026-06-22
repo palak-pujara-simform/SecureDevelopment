@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — OWASP Top 10 Demo</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; }
+        .sidebar { min-height: calc(100vh - 56px); background: #1a1a2e; }
+        .sidebar .nav-link { color: #a0aec0; font-size: 0.85rem; padding: 0.4rem 1rem; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,0.08); border-radius: 6px; }
+        .sidebar .nav-section { color: #4a5568; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.5rem 1rem 0.2rem; font-weight: 700; }
+        .sidebar .badge-owasp { font-size: 0.65rem; }
+        .top-bar { background: #1a1a2e; color: white; }
+        .card-vulnerable { border-left: 4px solid #dc3545; }
+        .card-secure { border-left: 4px solid #28a745; }
+        .badge-vuln { background-color: #dc3545; }
+        .badge-secure { background-color: #28a745; }
+        .code-block { background: #1e1e1e; color: #d4d4d4; border-radius: 6px; padding: 1rem; font-family: 'Consolas', monospace; font-size: 0.82rem; overflow-x: auto; }
+        .attack-tip { background: #fff3cd; border-left: 4px solid #ffc107; padding: 0.75rem; border-radius: 4px; }
+        .mitigation-tip { background: #d4edda; border-left: 4px solid #28a745; padding: 0.75rem; border-radius: 4px; }
+        .demo-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+        pre { white-space: pre-wrap; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm top-bar py-2">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold text-white" asp-controller="Home" asp-action="Index">
+                🔐 OWASP Top 10 Demo
+            </a>
+            <span class="text-secondary small">Secure Software Development — Department Session</span>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 col-lg-2 sidebar pt-3 d-none d-md-block">
+                <div class="nav-section">Navigation</div>
+                <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">🏠 Dashboard</a>
+                    </li>
+                </ul>
+                <div class="nav-section mt-2">OWASP Top 10</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A01_BrokenAccess" asp-action="Index">
+                            <span class="badge badge-owasp bg-danger me-1">A01</span> Broken Access Control
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A02_Cryptographic" asp-action="Index">
+                            <span class="badge badge-owasp bg-danger me-1">A02</span> Cryptographic Failures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A03_Injection" asp-action="Index">
+                            <span class="badge badge-owasp bg-danger me-1">A03</span> Injection
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A04_InsecureDesign" asp-action="Index">
+                            <span class="badge badge-owasp bg-warning text-dark me-1">A04</span> Insecure Design
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A05_Misconfig" asp-action="Index">
+                            <span class="badge badge-owasp bg-warning text-dark me-1">A05</span> Security Misconfig
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A06_Components" asp-action="Index">
+                            <span class="badge badge-owasp bg-warning text-dark me-1">A06</span> Vulnerable Components
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A07_Auth" asp-action="Index">
+                            <span class="badge badge-owasp bg-danger me-1">A07</span> Auth Failures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A08_Integrity" asp-action="Index">
+                            <span class="badge badge-owasp bg-warning text-dark me-1">A08</span> Integrity Failures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A09_Logging" asp-action="Index">
+                            <span class="badge badge-owasp bg-secondary me-1">A09</span> Logging Failures
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="A10_SSRF" asp-action="Index">
+                            <span class="badge badge-owasp bg-secondary me-1">A10</span> SSRF
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 col-lg-10 ms-sm-auto px-md-4 pt-3 pb-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

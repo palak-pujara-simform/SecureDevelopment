@@ -1,0 +1,101 @@
+@model OWASPDemo.Models.LoggingViewModel
+@{
+    ViewData["Title"] = "A09 — Logging Failures";
+}
+
+<h4 class="fw-bold">A09 — Security Logging and Monitoring Failures</h4>
+<p class="text-muted">Without proper audit trails, breaches go undetected for months. PII in logs creates additional exposure.</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="alert alert-danger py-2 mb-0 small">
+            <strong>⚡ Problems:</strong> No audit trail for logins, passwords logged in plaintext, no brute-force detection
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success py-2 mb-0 small">
+            <strong>🛡️ Fix:</strong> Structured audit logs, never log secrets, flag suspicious activity, alert on anomalies
+        </div>
+    </div>
+</div>
+
+<div class="mb-2 small text-muted">
+    Test users: <code>alice / password123</code> &nbsp;|&nbsp; <code>bob / bobpass</code> &nbsp;|&nbsp;
+    <a asp-action="ClearLogs" class="text-decoration-none text-danger">Clear All Logs</a>
+</div>
+
+<div class="row g-3">
+    <!-- VULNERABLE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — Password in Logs, No Audit Trail</h6>
+            <div class="attack-tip mb-3 small">
+                <strong>⚡ Try:</strong> Login with correct then wrong credentials.<br />
+                Notice: the <strong>password and SSN are logged</strong>! No failed-login tracking.
+            </div>
+            <form method="post" asp-action="VulnerableLogin">
+                <div class="mb-1">
+                    <input type="text" name="Username" value="@(Model.IsVulnerable ? Model.Username : "")" placeholder="alice" class="form-control form-control-sm" />
+                </div>
+                <div class="mb-2">
+                    <input type="password" name="Password" placeholder="password123" class="form-control form-control-sm" />
+                </div>
+                <button class="btn btn-danger btn-sm">Login (Vulnerable Logging)</button>
+            </form>
+            @if (Model.IsVulnerable && Model.LogOutput != null)
+            {
+                <div class="code-block mt-2 small"><pre>LOG OUTPUT:
+@Model.LogOutput</pre></div>
+                <small class="@(Model.Success ? "text-warning" : "text-muted")">@Model.Message</small>
+            }
+        </div>
+    </div>
+
+    <!-- SECURE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — Structured Audit Log, No Secrets</h6>
+            <div class="mitigation-tip mb-3 small">
+                <strong>🛡️ Try:</strong> Fail login 3+ times → flagged as suspicious (IsSuspicious=true).<br />
+                No passwords or PII in log. Structured for SIEM ingestion.
+            </div>
+            <form method="post" asp-action="SecureLogin">
+                <div class="mb-1">
+                    <input type="text" name="Username" value="@(!Model.IsVulnerable ? Model.Username : "")" placeholder="alice" class="form-control form-control-sm" />
+                </div>
+                <div class="mb-2">
+                    <input type="password" name="Password" placeholder="password123" class="form-control form-control-sm" />
+                </div>
+                <button class="btn btn-success btn-sm">Login (Secure Logging)</button>
+            </form>
+            @if (!Model.IsVulnerable && Model.LogOutput != null)
+            {
+                <div class="code-block mt-2 small"><pre>@Model.LogOutput</pre></div>
+                <small class="@(Model.Success ? "text-success" : "text-muted")">@Model.Message</small>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.RecentLogs != null && Model.RecentLogs.Any())
+{
+    <div class="mt-4">
+        <h6 class="fw-bold">📋 Audit Log (Secure Events)</h6>
+        <table class="table table-sm table-striped">
+            <thead><tr><th>Time (UTC)</th><th>Action</th><th>User</th><th>IP</th><th>Details</th><th>Suspicious</th></tr></thead>
+            <tbody>
+                @foreach (var log in Model.RecentLogs)
+                {
+                    <tr class="@(log.IsSuspicious ? "table-danger" : "")">
+                        <td class="small">@log.Timestamp.ToString("HH:mm:ss")</td>
+                        <td><span class="badge @(log.Action.Contains("SUCCESS") ? "bg-success" : "bg-danger")">@log.Action</span></td>
+                        <td>@log.Username</td>
+                        <td>@log.IpAddress</td>
+                        <td class="small">@log.Details</td>
+                        <td>@(log.IsSuspicious ? "⚠️ YES" : "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Admin Panel";
+    bool isVulnerable = ViewBag.IsVulnerable ?? true;
+    string? error = ViewBag.Error;
+    var users = ViewBag.Users as List<OWASPDemo.Models.User>;
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-3">← Back</a>
+
+@if (error != null)
+{
+    <div class="demo-container card-secure">
+        <h6 class="text-success fw-bold">🟢 SECURE — Access Denied</h6>
+        <div class="alert alert-danger">@error</div>
+        <p class="small">The admin panel enforces role-based access. Users without the "admin" role are blocked.</p>
+    </div>
+}
+else
+{
+    <div class="demo-container @(isVulnerable ? "card-vulnerable" : "card-secure")">
+        <h6 class="@(isVulnerable ? "text-danger" : "text-success") fw-bold">
+            @(isVulnerable ? "🔴 VULNERABLE — No Auth" : "🟢 SECURE — Admin Authenticated") Admin Panel
+        </h6>
+        @if (isVulnerable)
+        {
+            <div class="alert alert-danger small">
+                ⚠️ This admin panel is accessible without any authentication. Any user can view all accounts.
+            </div>
+        }
+        @if (users != null)
+        {
+            <table class="table table-sm @(isVulnerable ? "table-danger" : "")">
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Balance</th><th>CC</th></tr></thead>
+                <tbody>
+                    @foreach (var u in users)
+                    {
+                        <tr>
+                            <td>@u.Id</td><td>@u.Username</td><td>@u.Email</td>
+                            <td><span class="badge @(u.Role=="admin"?"bg-danger":"bg-secondary")">@u.Role</span></td>
+                            <td>@u.AccountBalance.ToString("C")</td>
+                            <td>@(isVulnerable ? u.CreditCard : "****-****-****-" + u.CreditCard?.Substring(12))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}

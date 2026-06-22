@@ -1,0 +1,86 @@
+@model OWASPDemo.Models.PasswordResetViewModel
+@{
+    ViewData["Title"] = "A04 — Insecure Design";
+}
+
+<h4 class="fw-bold">A04 — Insecure Design</h4>
+<p class="text-muted">Flaws in design that cannot be fixed by implementation alone. Missing security controls by design.</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="alert alert-danger py-2 mb-0 small">
+            <strong>⚡ Attack:</strong> Flood password reset — no rate limit → account takeover / email spam bomb
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="alert alert-success py-2 mb-0 small">
+            <strong>🛡️ Fix:</strong> Rate limit (max 3/15 min), short-lived tokens (15 min), same response regardless of result
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- VULNERABLE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-vulnerable">
+            <h6 class="text-danger fw-bold">🔴 VULNERABLE — No Rate Limiting</h6>
+            <div class="attack-tip mb-3 small">
+                <strong>⚡ Try:</strong> Submit "alice@example.com" multiple times rapidly — no throttle.<br />
+                Token is valid for 30 days. Different message for found/not-found reveals user enumeration.
+            </div>
+            <form method="post" asp-action="VulnerableReset">
+                <div class="d-flex gap-2">
+                    <input type="email" name="Email" value="@(Model.IsVulnerable ? Model.Email : "")" placeholder="alice@example.com" class="form-control form-control-sm" />
+                    <button class="btn btn-danger btn-sm">Reset</button>
+                </div>
+            </form>
+            @if (Model.IsVulnerable && Model.Message != null)
+            {
+                <div class="alert @(Model.Success ? "alert-warning" : "alert-secondary") mt-2 small">@Model.Message</div>
+            }
+            <div class="code-block mt-3">
+<pre>// VULNERABLE: No rate limit, 30-day token
+// Different message reveals whether email exists
+user.ResetToken = Guid.NewGuid().ToString();
+user.TokenExpiry = DateTime.UtcNow.AddDays(30);
+// → User enumeration + spam flooding possible</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURE -->
+    <div class="col-lg-6">
+        <div class="demo-container card-secure">
+            <h6 class="text-success fw-bold">🟢 SECURE — Rate Limited, Short-Lived Token</h6>
+            <div class="mitigation-tip mb-3 small">
+                <strong>🛡️ After 3 attempts:</strong> Further requests blocked for 15 minutes.<br />
+                Same response whether email exists or not (no enumeration).
+            </div>
+            <form method="post" asp-action="SecureReset">
+                <div class="d-flex gap-2">
+                    <input type="email" name="Email" value="@(!Model.IsVulnerable ? Model.Email : "")" placeholder="alice@example.com" class="form-control form-control-sm" />
+                    <button class="btn btn-success btn-sm">Reset</button>
+                </div>
+            </form>
+            @if (!Model.IsVulnerable && Model.Message != null)
+            {
+                <div class="alert @(Model.Success ? "alert-success" : "alert-danger") mt-2 small">@Model.Message</div>
+            }
+            <div class="code-block mt-3">
+<pre>// SECURE: Rate limit 3 per 15 min
+if (requestCount >= 3 &amp;&amp; withinWindow)
+    return "Too many requests.";
+
+user.ResetToken = Convert.ToBase64String(
+    RandomNumberGenerator.GetBytes(32)); // cryptographically random
+user.TokenExpiry = UtcNow.AddMinutes(15);
+return "If email exists, link sent."; // always same</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 p-3 bg-light border rounded small">
+    <strong>Real-world example:</strong> In 2020, a fintech startup had no limit on SMS OTP requests.
+    Attackers spammed victims with thousands of SMS messages (SMS bombing) costing the company $50K/day in carrier fees.
+</div>

@@ -1,0 +1,64 @@
+@model OWASPDemo.Models.AccessControlViewModel
+@{
+    ViewData["Title"] = Model.IsVulnerable ? "Vulnerable Profile" : "Secure Profile";
+    var cardClass = Model.IsVulnerable ? "card-vulnerable" : "card-secure";
+    var label = Model.IsVulnerable ? "🔴 VULNERABLE" : "🟢 SECURE";
+    var labelClass = Model.IsVulnerable ? "text-danger" : "text-success";
+}
+
+<div class="d-flex gap-2 mb-3">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back</a>
+    <h5 class="fw-bold @labelClass mb-0 align-self-center">@label — Profile Request (ID=@Model.UserId)</h5>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="demo-container @cardClass">
+            <p class="small text-muted mb-2">
+                Logged in as: <strong>@Model.CurrentUsername (ID=@Model.CurrentUserId)</strong> &nbsp;|&nbsp;
+                Requested: <strong>User ID = @Model.UserId</strong>
+            </p>
+
+            @if (Model.Error != null)
+            {
+                <div class="alert @(Model.IsVulnerable ? "alert-warning" : "alert-danger")">
+                    <strong>@(Model.IsVulnerable ? "Not found" : "ACCESS DENIED")</strong><br />
+                    @Model.Error
+                </div>
+            }
+            else if (Model.RequestedUser != null)
+            {
+                var u = Model.RequestedUser;
+                <table class="table table-sm">
+                    <tr><th>Username</th><td>@u.Username</td></tr>
+                    <tr><th>Email</th><td>@u.Email</td></tr>
+                    <tr><th>Role</th><td><span class="badge @(u.Role=="admin" ? "bg-danger" : "bg-secondary")">@u.Role</span></td></tr>
+                    <tr class="@(Model.IsVulnerable && Model.UserId != Model.CurrentUserId ? "table-danger" : "")">
+                        <th>Account Balance</th>
+                        <td><strong>@u.AccountBalance.ToString("C")</strong></td>
+                    </tr>
+                    <tr class="@(Model.IsVulnerable && Model.UserId != Model.CurrentUserId ? "table-danger" : "")">
+                        <th>Credit Card</th>
+                        <td>@(Model.IsVulnerable ? u.CreditCard : "****-****-****-" + u.CreditCard?.Substring(12))</td>
+                    </tr>
+                    <tr class="@(Model.IsVulnerable && Model.UserId != Model.CurrentUserId ? "table-danger" : "")">
+                        <th>SSN</th>
+                        <td>@(Model.IsVulnerable ? u.SSN : "***-**-****")</td>
+                    </tr>
+                </table>
+                @if (Model.IsVulnerable && Model.UserId != Model.CurrentUserId)
+                {
+                    <div class="alert alert-danger mt-2 small">
+                        ⚠️ <strong>IDOR Attack Successful!</strong> You accessed another user's private data by changing the URL ID.
+                    </div>
+                }
+                else if (!Model.IsVulnerable && Model.UserId == Model.CurrentUserId)
+                {
+                    <div class="alert alert-success mt-2 small">
+                        ✅ Showing your own profile data only.
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
