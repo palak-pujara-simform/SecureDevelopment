@@ -35,20 +35,6 @@ public class A02_CryptographicController : Controller
         return View("Index", vm);
     }
 
-    // SECURE: BCrypt with work factor — resistant to brute force
-    [HttpPost]
-    public IActionResult SecureHash(CryptoViewModel vm)
-    {
-        if (!string.IsNullOrEmpty(vm.Password))
-        {
-            vm.Hash = BCrypt.Net.BCrypt.HashPassword(vm.Password, workFactor: 12);
-            vm.Algorithm = "BCrypt (work factor 12)";
-            vm.IsVulnerable = false;
-            vm.Message = "BCrypt includes a unique salt and is adaptive — increasing work factor slows brute force over time.";
-        }
-        return View("Index", vm);
-    }
-
     // Show hardcoded secrets from appsettings — exposed sensitive data
     public IActionResult ShowSecrets()
     {

@@ -3,7 +3,7 @@
 }
 
 <h4 class="fw-bold mb-1">OWASP Top 10 — Live Demo</h4>
-<p class="text-muted mb-4">Each card links to a live, interactive demonstration showing both the <span class="text-danger fw-semibold">vulnerable</span> and <span class="text-success fw-semibold">secure</span> code paths.</p>
+<p class="text-muted mb-4">Each card links to a live, interactive demonstration of the <span class="text-danger fw-semibold">vulnerable</span> code path and how it can be exploited.</p>
 
 <div class="row g-3">
     @{
@@ -62,11 +62,8 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text small">@d.Desc</p>
-                    <div class="d-flex flex-wrap gap-1 mb-2">
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">⚡ @d.Attack</span>
-                    </div>
                     <div class="d-flex flex-wrap gap-1">
-                        <span class="badge bg-success-subtle text-success border border-success-subtle">🛡️ @d.Fix</span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">⚡ @d.Attack</span>
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pb-3">

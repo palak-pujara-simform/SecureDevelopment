@@ -7,17 +7,14 @@
 <p class="text-muted">Weak or missing encryption of sensitive data at rest and in transit.</p>
 
 <div class="row g-3 mb-3">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="alert alert-danger py-2 mb-0"><strong>Attack:</strong> MD5/SHA1 hashes cracked via rainbow tables in seconds</div>
-    </div>
-    <div class="col-md-6">
-        <div class="alert alert-success py-2 mb-0"><strong>Fix:</strong> BCrypt/Argon2 with salt + secrets vault (not config files)</div>
     </div>
 </div>
 
 <div class="row g-3 mb-4">
     <!-- VULNERABLE -->
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <div class="demo-container card-vulnerable">
             <h6 class="text-danger fw-bold">🔴 VULNERABLE — MD5 Password Hash</h6>
             <div class="attack-tip mb-3 small">
@@ -46,37 +43,6 @@ var hash = md5.ComputeHash(
             </div>
         </div>
     </div>
-
-    <!-- SECURE -->
-    <div class="col-lg-6">
-        <div class="demo-container card-secure">
-            <h6 class="text-success fw-bold">🟢 SECURE — BCrypt with Salt</h6>
-            <div class="mitigation-tip mb-3 small">
-                <strong>🛡️ Try:</strong> Hash the same "password123" — each run produces a different hash (salt). No rainbow table works.
-            </div>
-            <form method="post" asp-action="SecureHash">
-                <div class="d-flex gap-2">
-                    <input type="text" name="Password" value="@Model.Password" placeholder="Enter password" class="form-control form-control-sm" />
-                    <button class="btn btn-success btn-sm">Hash (BCrypt)</button>
-                </div>
-            </form>
-            @if (!Model.IsVulnerable && Model.Hash != null)
-            {
-                <div class="alert alert-success mt-3 small">
-                    <strong>Algorithm:</strong> @Model.Algorithm<br />
-                    <strong>Hash:</strong> <code style="word-break:break-all">@Model.Hash</code><br />
-                    <strong>✅ @Model.Message</strong>
-                </div>
-            }
-            <div class="code-block mt-3">
-<pre>// SECURE
-var hash = BCrypt.Net.BCrypt.HashPassword(
-    password, workFactor: 12);
-// Random salt embedded, adaptive cost factor
-// Verify: BCrypt.Verify(input, storedHash)</pre>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Hardcoded Secrets Demo -->
@@ -90,10 +56,6 @@ var hash = BCrypt.Net.BCrypt.HashPassword(
   "SecretKey": "HARDCODED_SECRET_KEY_12345",
   "AdminPassword": "admin123",
   "ApiToken": "eyJhbGciOiJIUzI1NiJ9..."
-}
-
-// SECURE: Use environment variables or a vault
-SecretKey = Environment.GetEnvironmentVariable("APP_SECRET_KEY")
-// or Azure Key Vault / AWS Secrets Manager</pre>
+}</pre>
     </div>
 </div>

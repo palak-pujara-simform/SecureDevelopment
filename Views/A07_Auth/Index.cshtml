@@ -2,33 +2,26 @@
 @{
     ViewData["Title"] = "A07 — Authentication Failures";
     var vulnAlertClass = Model.Success ? "alert-warning" : "alert-secondary";
-    var secureAlertClass = Model.Success ? "alert-success" : "alert-danger";
 }
 
 <h4 class="fw-bold">A07 — Identification and Authentication Failures</h4>
 <p class="text-muted">Broken authentication allows attackers to assume other users' identities.</p>
 
 <div class="row g-3 mb-3">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="alert alert-danger py-2 mb-0 small">
             <strong>Attack:</strong> Brute force — no lockout. Plaintext password compare. Session fixation.
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="alert alert-success py-2 mb-0 small">
-            <strong>Fix:</strong> BCrypt verification + lockout after 5 fails + session regeneration on login
         </div>
     </div>
 </div>
 
 <div class="mb-2 small text-muted">
     Test users: <code>alice / password123</code> &nbsp;|&nbsp; <code>bob / bobpass</code> &nbsp;|&nbsp; <code>admin / admin123</code>
-    &nbsp;|&nbsp; <a asp-action="ResetLockout" class="text-decoration-none">Reset Lockout</a>
 </div>
 
 <div class="row g-3">
     <!-- VULNERABLE -->
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <div class="demo-container card-vulnerable">
             <h6 class="text-danger fw-bold">VULNERABLE — No Lockout, Plaintext Compare</h6>
             <div class="attack-tip mb-3 small">
@@ -60,47 +53,6 @@
 if (user.PasswordPlain == password) // plaintext!
     Session["user"] = username; // no regeneration
 // No lockout tracking, session fixation possible</pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECURE -->
-    <div class="col-lg-6">
-        <div class="demo-container card-secure">
-            <h6 class="text-success fw-bold">SECURE — BCrypt + Lockout + Session Regeneration</h6>
-            <div class="mitigation-tip mb-3 small">
-                <strong>Try:</strong> Enter wrong password 5 times — account locks for 15 min.<br />
-                Same "Invalid credentials" message regardless of whether user exists.
-            </div>
-            <form method="post" asp-action="SecureLogin">
-                <div class="mb-2">
-                    <input type="text" name="Username" value="@(!Model.IsVulnerable ? Model.Username : "")" placeholder="Username" class="form-control form-control-sm" />
-                </div>
-                <div class="mb-2">
-                    <input type="password" name="Password" placeholder="Password" class="form-control form-control-sm" />
-                </div>
-                <button class="btn btn-success btn-sm">Login (Secure)</button>
-            </form>
-            @if (!Model.IsVulnerable && Model.Message != null)
-            {
-                <div class="alert @secureAlertClass mt-2 small">
-                    @Model.Message
-                    @if (Model.Success && Model.LoggedInUser != null)
-                    {
-                        <br /><span class="text-success">Session regenerated, BCrypt verified, role stored.</span>
-                    }
-                </div>
-            }
-            <div class="code-block mt-3">
-<pre>// SECURE
-if (BCrypt.Verify(password, user.PasswordHash))
-{
-    user.LoginAttempts = 0;
-    Session.Clear(); // prevent session fixation
-    Session["user"] = username;
-}
-else if (++user.LoginAttempts >= 5)
-    user.LockedUntil = UtcNow.AddMinutes(15);</pre>
             </div>
         </div>
     </div>

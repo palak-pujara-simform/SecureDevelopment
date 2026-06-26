@@ -42,41 +42,6 @@ public class A09_LoggingController : Controller
         return View("Index", vm);
     }
 
-    // SECURE: Audit trail with no sensitive data, suspicious activity flagged
-    [HttpPost]
-    public IActionResult SecureLogin(LoggingViewModel vm)
-    {
-        vm.IsVulnerable = false;
-        var user = _db.Users.FirstOrDefault(u => u.Username == vm.Username);
-        bool success = user != null && BCrypt.Net.BCrypt.Verify(vm.Password, user.PasswordHash);
-        vm.Success = success;
-
-        var recentFailures = _db.AuditLogs.Count(l =>
-            l.Username == vm.Username &&
-            l.Action == "LOGIN_FAILURE" &&
-            l.Timestamp > DateTime.UtcNow.AddMinutes(-15));
-
-        var log = new AuditLog
-        {
-            Action = success ? "LOGIN_SUCCESS" : "LOGIN_FAILURE",
-            Username = vm.Username,
-            // SECURE: Never log passwords or PII
-            Details = success
-                ? $"Successful login for user '{vm.Username}'"
-                : $"Failed login attempt #{recentFailures + 1} for '{vm.Username}'",
-            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            IsSuspicious = !success && recentFailures >= 3,
-            Timestamp = DateTime.UtcNow
-        };
-        _db.AuditLogs.Add(log);
-        _db.SaveChanges();
-
-        vm.Message = success ? "Login successful." : "Invalid credentials.";
-        vm.LogOutput = $"Logged: {log.Action} | User: {log.Username} | Suspicious: {log.IsSuspicious}";
-        vm.RecentLogs = _db.AuditLogs.OrderByDescending(l => l.Timestamp).Take(10).ToList();
-        return View("Index", vm);
-    }
-
     public IActionResult ClearLogs()
     {
         _vulnerableLogs.Clear();

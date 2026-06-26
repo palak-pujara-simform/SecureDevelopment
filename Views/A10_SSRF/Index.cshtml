@@ -7,7 +7,7 @@
 <p class="text-muted">Server fetches a URL specified by the user — attacker redirects it to internal services.</p>
 
 <div class="row g-3 mb-3">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="alert alert-danger py-2 mb-0 small">
             <strong>⚡ Attack payloads:</strong><br />
             <code>http://169.254.169.254/latest/meta-data/</code> (AWS metadata)<br />
@@ -15,17 +15,11 @@
             <code>http://internal-db:5432</code> (port scanning)
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="alert alert-success py-2 mb-0 small">
-            <strong>🛡️ Fix:</strong> Allow-list of permitted hosts. Force HTTPS. Block private IP ranges.
-            Allowed hosts: <code>api.github.com</code>, <code>httpbin.org</code>, <code>jsonplaceholder.typicode.com</code>
-        </div>
-    </div>
 </div>
 
 <div class="row g-3">
     <!-- VULNERABLE -->
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <div class="demo-container card-vulnerable">
             <h6 class="text-danger fw-bold">🔴 VULNERABLE — Fetches Any URL</h6>
             <p class="small text-muted">This server will fetch any URL you provide — including internal services.</p>
@@ -51,52 +45,15 @@
             }
         </div>
     </div>
-
-    <!-- SECURE -->
-    <div class="col-lg-6">
-        <div class="demo-container card-secure">
-            <h6 class="text-success fw-bold">🟢 SECURE — Allow-List Enforced</h6>
-            <p class="small text-muted">Only whitelisted hosts allowed. Try <code>https://httpbin.org/get</code> (allowed) vs <code>http://169.254.169.254/</code> (blocked).</p>
-            <form method="post" asp-action="SecureFetch">
-                <div class="d-flex gap-2">
-                    <input type="url" name="Url" value="@(!Model.IsVulnerable ? Model.Url : "https://httpbin.org/get")" class="form-control form-control-sm" />
-                    <button class="btn btn-success btn-sm">Fetch</button>
-                </div>
-            </form>
-            @if (!Model.IsVulnerable)
-            {
-                @if (Model.Error != null)
-                {
-                    <div class="alert alert-danger mt-2 small">@Model.Error</div>
-                }
-                else if (Model.Response != null)
-                {
-                    <div class="mt-2">
-                        <small class="text-muted">Status: @Model.StatusCode | Response:</small>
-                        <div class="code-block mt-1 small" style="max-height:200px;overflow:auto"><pre>@Model.Response</pre></div>
-                    </div>
-                }
-            }
-        </div>
-    </div>
 </div>
 
 <div class="row g-3 mt-1">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="code-block">
 <pre>// VULNERABLE: Fetches any URL
 var response = await _http.GetAsync(userUrl);
 // User sends: http://169.254.169.254/meta-data/
 // Server returns: AWS IAM credentials!</pre>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="code-block">
-<pre>// SECURE: Allow-list validation
-if (uri.Scheme != "https") return Blocked();
-if (!_allowedHosts.Contains(uri.Host))
-    return $"Blocked: {uri.Host} not permitted";
-var response = await _http.GetAsync(uri);</pre>
         </div>
     </div>
 </div>

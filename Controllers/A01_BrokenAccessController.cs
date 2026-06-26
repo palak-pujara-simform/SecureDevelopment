@@ -26,35 +26,4 @@ public class A01_BrokenAccessController : Controller
             Error = user == null ? "User not found." : null
         });
     }
-
-    // SECURE: Ownership enforced — user can only view their own profile (or admin can view all)
-    public IActionResult SecureProfile(int id = 1)
-    {
-        const int currentUserId = 1;
-        const string currentUsername = "alice";
-
-        var currentUser = _db.Users.Find(currentUserId);
-        if (id != currentUserId && currentUser?.Role != "admin")
-        {
-            return View("Profile", new AccessControlViewModel
-            {
-                UserId = id,
-                IsVulnerable = false,
-                CurrentUserId = currentUserId,
-                CurrentUsername = currentUsername,
-                Error = "403 Forbidden: You can only view your own profile."
-            });
-        }
-
-        var user = _db.Users.Find(id);
-        return View("Profile", new AccessControlViewModel
-        {
-            UserId = id,
-            RequestedUser = user,
-            IsVulnerable = false,
-            CurrentUserId = currentUserId,
-            CurrentUsername = currentUsername,
-            Error = user == null ? "User not found." : null
-        });
-    }
 }
